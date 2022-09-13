@@ -11,13 +11,15 @@ echo "Computer: $env:computername" | Add-Content -Path $path\$logfile
 date | Add-Content -Path $path\$logfile
 echo "User: $env:USERNAME\$env:USERDOMAIN`n" | Add-Content -Path $path\$logfile 
 
+# Finding domain sid and "domain admins" group name
+$DomainSID = (Get-ADDomain).DomainSID
+$DomainAdminsSid = New-Object System.Security.Principal.SecurityIdentifier ([System.Security.Principal.WellKnownSidType]::AccountDomainAdminsSid,$DomainSID)
+$DomainAdminGroup = Get-ADGroup -Filter {SID -eq $DomainAdminsSid} -Properties Name
+
 echo "Extracting Domain Administrator Group Memberships`n" | Add-Content -Path $path\$logfile
-# English group names
-Get-ADGroupMember -Identity "Domain Admins" -Recursive | export-csv -delimiter "`t" -path $path\local-admin-group-membership-all_$env:computername.txt -notype
-Get-ADGroupMember -Identity "Domain Admins" -Recursive | Get-ADUser -Filter {Enabled -eq $true} | export-csv -delimiter "`t" -path $path\local-admin-group-membership-enabled_$env:computername.txt -notype
-# French group names
-Get-ADGroupMember -Identity "Administrateurs de Domaine" -Recursive | export-csv -delimiter "`t" -path $path\local-admin-group-membership-all-FR_$env:computername.txt -notype
-Get-ADGroupMember -Identity "Administrateurs de Domaine" -Recursive | Get-ADUser -Filter {Enabled -eq $true} | export-csv -delimiter "`t" -path $path\local-admin-group-membership-enabled-FR_$env:computername.txt -notype
+Get-ADGroupMember -Identity $DomainAdminGroup -Recursive | export-csv -delimiter "`t" -path $path\local-admin-group-membership-all_$env:computername.txt -notype
+Get-ADGroupMember -Identity $DomainAdminGroup -Recursive | Get-ADUser -Filter {Enabled -eq $true} | export-csv -delimiter "`t" -path $path\local-admin-group-membership-enabled_$env:computername.txt -notype
+
 
 echo "Extracting all group policies`n" | Add-Content -Path $path\$logfile
 Get-GPO -all | % { Get-GPOReport -GUID $_.id -ReportType HTML -Path "$path\$($_.displayName).html" }
