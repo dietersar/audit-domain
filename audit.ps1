@@ -15,10 +15,17 @@ echo "User: $env:USERNAME\$env:USERDOMAIN`n" | Add-Content -Path $path\$logfile
 $DomainSID = (Get-ADDomain).DomainSID
 $DomainAdminsSid = New-Object System.Security.Principal.SecurityIdentifier ([System.Security.Principal.WellKnownSidType]::AccountDomainAdminsSid,$DomainSID)
 $DomainAdminGroup = Get-ADGroup -Filter {SID -eq $DomainAdminsSid} -Properties Name
+$EnterpriseAdminsSid = New-Object System.Security.Principal.SecurityIdentifier ([System.Security.Principal.WellKnownSidType]::AccountEnterpriseAdminsSid,$DomainSID)
+$EnterpriseAdminGroup = Get-ADGroup -Filter {SID -eq $EnterpriseAdminsSid} -Properties Name
+
 
 echo "Extracting Domain Administrator Group Memberships`n" | Add-Content -Path $path\$logfile
-Get-ADGroupMember -Identity $DomainAdminGroup -Recursive | export-csv -delimiter "`t" -path $path\local-admin-group-membership-all_$env:computername.txt -notype
-Get-ADGroupMember -Identity $DomainAdminGroup -Recursive | Get-ADUser -Filter {Enabled -eq $true} | export-csv -delimiter "`t" -path $path\local-admin-group-membership-enabled_$env:computername.txt -notype
+Get-ADGroupMember -Identity $DomainAdminGroup -Recursive | export-csv -delimiter "`t" -path $path\domain-admin-group-membership-all_$env:computername.txt -notype
+Get-ADGroupMember -Identity $DomainAdminGroup -Recursive | Get-ADUser -Filter {Enabled -eq $true} | export-csv -delimiter "`t" -path $path\domain-admin-group-membership-enabled_$env:computername.txt -notype
+
+echo "Extracting Enterprise Administrator Group Memberships`n" | Add-Content -Path $path\$logfile
+Get-ADGroupMember -Identity $EnterpriseAdminGroup -Recursive | export-csv -delimiter "`t" -path $path\enterprise-admin-group-membership-all_$env:computername.txt -notype
+Get-ADGroupMember -Identity $EnterpriseAdminGroup -Recursive | Get-ADUser -Filter {Enabled -eq $true} | export-csv -delimiter "`t" -path $path\enterprise-admin-group-membership-enabled_$env:computername.txt -notype
 
 
 echo "Extracting all group policies`n" | Add-Content -Path $path\$logfile
