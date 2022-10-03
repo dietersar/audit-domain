@@ -21,11 +21,11 @@ $EnterpriseAdminGroup = Get-ADGroup -Filter {SID -eq $EnterpriseAdminsSid} -Prop
 
 echo "Extracting Domain Administrator Group Memberships`n" | Add-Content -Path $path\$logfile
 Get-ADGroupMember -Identity $DomainAdminGroup -Recursive | export-csv -delimiter "`t" -path $path\domain-admin-group-membership-all_$env:computername.txt -notype
-Get-ADGroupMember -Identity $DomainAdminGroup -Recursive | Get-ADUser -Filter {Enabled -eq $true} | export-csv -delimiter "`t" -path $path\domain-admin-group-membership-enabled_$env:computername.txt -notype
+Get-ADGroupMember -Identity $DomainAdminGroup -Recursive | Get-ADUser -Properties * | Select DisplayName,SamAccountName,DistinguishedName,Enabled,whenChanged,LastLogonDate | export-csv -delimiter "`t" -path $path\domain-admin-group-membership-enabled_$env:computername.txt -notype
 
 echo "Extracting Enterprise Administrator Group Memberships`n" | Add-Content -Path $path\$logfile
 Get-ADGroupMember -Identity $EnterpriseAdminGroup -Recursive | export-csv -delimiter "`t" -path $path\enterprise-admin-group-membership-all_$env:computername.txt -notype
-Get-ADGroupMember -Identity $EnterpriseAdminGroup -Recursive | Get-ADUser -Filter {Enabled -eq $true} | export-csv -delimiter "`t" -path $path\enterprise-admin-group-membership-enabled_$env:computername.txt -notype
+Get-ADGroupMember -Identity $EnterpriseAdminGroup -Recursive | Get-ADUser -Properties * | Select DisplayName,SamAccountName,DistinguishedName,Enabled,whenChanged,LastLogonDate | export-csv -delimiter "`t" -path $path\enterprise-admin-group-membership-enabled_$env:computername.txt -notype
 
 
 echo "Extracting all group policies`n" | Add-Content -Path $path\$logfile
